@@ -4,7 +4,7 @@
 // =============================================
 
 const CFG = {
-  key:  'bbc39717b4ebb3f95c484912fd78392f',
+  key:  '39717b4ebb3f95c484912fd78392f',
   host: 'https://v3.football.api-sports.io',
   cacheLive:  30  * 1000,   // 30s  pour le live
   cacheOther: 300 * 1000,   // 5min pour le reste
