@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>GoalZone | النتائج المباشرة وبث المباريات</title>
+<meta name="description" content="GoalZone - منصة كرة القدم الأولى عربيًا. النتائج المباشرة، البث، الترتيب، الأخبار."/>
+<meta name="keywords" content="كرة القدم, نتائج مباشرة, بث مباشر, دوري أبطال أوروبا, يلا شوت"/>
+<meta property="og:title" content="GoalZone | النتائج المباشرة"/>
+<meta property="og:description" content="منصة كرة القدم الأولى عربيًا"/>
+<meta property="og:type" content="website"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/main.css"/>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-ball">⚽</div>
+      GOALZONE
+    </div>
+
+    <nav class="nav" id="main-nav">
+      <a class="nav-a on" href="index.html">الرئيسية</a>
+      <a class="nav-a nav-live" href="pages/live.html"><span class="live-dot"></span> مباشر</a>
+      <a class="nav-a" href="pages/news.html">الأخبار</a>
+      <a class="nav-a" href="pages/watch.html">🔴 بث مباشر</a>
+    </nav>
+
+    <div class="header-actions" style="display:flex;align-items:center;gap:10px;margin-right:auto">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input id="global-search" class="search-input" placeholder="ابحث عن فريق أو مباراة..."
+               oninput="doSearch()" autocomplete="off"/>
+        <div class="search-drop" id="search-drop"></div>
+      </div>
+
+      <div class="lang">
+        <button class="lang-btn on" data-lang-btn="ar" onclick="setLang('ar')">ع</button>
+        <button class="lang-btn"    data-lang-btn="fr" onclick="setLang('fr')">FR</button>
+        <button class="lang-btn"    data-lang-btn="en" onclick="setLang('en')">EN</button>
+      </div>
+
+      <button class="theme-btn" onclick="toggleTheme()">☀️</button>
+
+      <div id="auth-area">
+        <button class="btn-signin" onclick="openLoginModal()">تسجيل دخول</button>
+      </div>
+
+      <button class="burger" onclick="toggleNav()">☰</button>
+    </div>
+  </div>
+</header>
+
+<!-- ══ TICKER ══ -->
+<div class="ticker">
+  <div class="ticker-label">🔴 LIVE</div>
+  <div style="overflow:hidden;flex:1">
+    <div class="ticker-track" id="ticker-track">
+      <span class="ticker-item">جارٍ تحميل المباريات الجارية...</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-left">
+        <div class="hero-tag">
+          <span class="live-dot"></span>
+          نتائج مباشرة · تحديث كل 30 ثانية
+        </div>
+        <h1 class="hero-h1">النتائج<br/><span>المباشرة</span><br/>لكرة القدم</h1>
+        <p class="hero-sub">تابع أهم المباريات لحظة بلحظة، شاهد البث المباشر، واحصل على آخر الأخبار والتحليلات.</p>
+        <div class="hero-btns">
+          <a href="pages/live.html" class="btn-primary">🔴 المباريات المباشرة</a>
+          <a href="pages/watch.html" class="btn-ghost">📺 البث المباشر</a>
+        </div>
+        <div class="hero-stats">
+          <div class="hstat">
+            <span class="hstat-n" id="live-count">—</span>
+            <span class="hstat-l">LIVE الآن</span>
+          </div>
+          <div class="hstat">
+            <span class="hstat-n" id="today-count">—</span>
+            <span class="hstat-l">مباراة اليوم</span>
+          </div>
+          <div class="hstat">
+            <span class="hstat-n" id="leagues-count">—</span>
+            <span class="hstat-l">بطولة</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mini live feed -->
+      <div class="hero-right">
+        <div class="hero-right-head">
+          <span class="live-dot"></span>
+          آخر نتائج اليوم
+        </div>
+        <div class="hero-right-body" id="hero-feed">
+          <div class="spinner-wrap" style="padding:30px"><div class="spin"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ MAIN ══ -->
+<main class="page">
+  <div class="container">
+    <div class="layout">
+
+      <!-- Matches -->
+      <div>
+        <div id="date-tabs" class="date-tabs"></div>
+
+        <div class="filters">
+          <button class="fbtn on" data-f="all"        onclick="setFilter('all')">الكل</button>
+          <button class="fbtn"    data-f="ucl"        onclick="setFilter('ucl')">🏆 أبطال أوروبا</button>
+          <button class="fbtn"    data-f="epl"        onclick="setFilter('epl')">🏴󠁧󠁢󠁥󠁮󠁧󠁿 الإنجليزية</button>
+          <button class="fbtn"    data-f="laliga"     onclick="setFilter('laliga')">🇪🇸 الإسبانية</button>
+          <button class="fbtn"    data-f="bundesliga" onclick="setFilter('bundesliga')">🇩🇪 الألمانية</button>
+          <button class="fbtn"    data-f="serie_a"    onclick="setFilter('serie_a')">🇮🇹 الإيطالية</button>
+          <button class="fbtn"    data-f="ligue1"     onclick="setFilter('ligue1')">🇫🇷 الفرنسية</button>
+          <button class="fbtn"    data-f="saudi"      onclick="setFilter('saudi')">🇸🇦 السعودية</button>
+        </div>
+
+        <div id="matches-feed"></div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="sidebar">
+
+        <!-- Standings -->
+        <div class="widget">
+          <div class="w-head">📊 الدوري الإنجليزي</div>
+          <div class="w-body">
+            <div id="standings-table"><div class="spinner-wrap" style="padding:20px"><div class="spin"></div></div></div>
+          </div>
+          <a class="w-more" href="#">عرض الكل →</a>
+        </div>
+
+        <!-- Top Scorers -->
+        <div class="widget">
+          <div class="w-head">⚽ هدافو الموسم</div>
+          <div class="w-body">
+            <div id="scorers-list"><div class="spinner-wrap" style="padding:20px"><div class="spin"></div></div></div>
+          </div>
+        </div>
+
+        <!-- VIP -->
+        <div class="widget vip-widget">
+          <div class="vip-crown">👑</div>
+          <h3>GoalZone VIP</h3>
+          <p>بث بدون إعلانات، جودة 4K، إشعارات فورية للأهداف</p>
+          <ul class="vip-feats">
+            <li>بث مباشر HD وبدون إعلانات</li>
+            <li>إشعارات فورية عند كل هدف</li>
+            <li>تحليلات ومعلومات حصرية</li>
+          </ul>
+          <button class="btn-vip" onclick="openVIPModal()">ابدأ الآن — $9.99/شهر</button>
+        </div>
+
+      </aside>
+    </div>
+  </div>
+</main>
+
+<!-- ══ FOOTER ══ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-logo"><div class="logo-ball" style="width:26px;height:26px;font-size:.85rem">⚽</div> GOALZONE</div>
+        <p class="footer-about">منصة كرة القدم الأولى عربيًا للنتائج المباشرة والبث والتحليلات والأخبار.</p>
+        <div class="socials">
+          <a class="social-a" href="#">📘</a>
+          <a class="social-a" href="#">🐦</a>
+          <a class="social-a" href="#">📸</a>
+          <a class="social-a" href="#">▶️</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>روابط سريعة</h4>
+        <a href="index.html">الرئيسية</a>
+        <a href="pages/live.html">مباشر</a>
+        <a href="pages/news.html">الأخبار</a>
+        <a href="pages/watch.html">بث مباشر</a>
+      </div>
+      <div class="footer-col">
+        <h4>البطولات</h4>
+        <a href="#">دوري أبطال أوروبا</a>
+        <a href="#">الدوري الإنجليزي</a>
+        <a href="#">الدوري الإسباني</a>
+        <a href="#">الدوري السعودي</a>
+      </div>
+      <div class="footer-col">
+        <h4>الدعم</h4>
+        <a href="#">سياسة الخصوصية</a>
+        <a href="#">الشروط والأحكام</a>
+        <a href="#">تواصل معنا</a>
+        <a href="admin/index.html">لوحة الإدارة</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    Developed by <strong>Mohammed Gharouadi</strong> ©2026 — جميع الحقوق محفوظة
+  </div>
+</footer>
+
+<!-- ══ MODALS ══ -->
+
+<!-- Match -->
+<div class="overlay" id="match-modal">
+  <div class="modal" style="max-width:640px">
+    <button class="modal-x" onclick="closeMatch()">✕</button>
+    <div class="modal-head"></div>
+    <div class="modal-body" id="match-body"></div>
+  </div>
+</div>
+
+<!-- Login -->
+<div class="overlay" id="login-modal">
+  <div class="modal auth-modal">
+    <button class="modal-x" onclick="closeModal('login-modal')">✕</button>
+    <div class="auth-modal-body">
+      <div class="modal-title">مرحباً بك</div>
+      <button class="google-btn" onclick="signInGoogle()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        الدخول بـ Google
+      </button>
+      <div class="divider">أو</div>
+      <input id="li-email" class="inp" type="email" placeholder="البريد الإلكتروني"/>
+      <input id="li-pass"  class="inp" type="password" placeholder="كلمة المرور"/>
+      <button class="btn-submit-full" onclick="signInEmail()">دخول</button>
+      <p class="auth-switch">ليس لديك حساب؟ <a onclick="openRegisterModal()">إنشاء حساب</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- Register -->
+<div class="overlay" id="register-modal">
+  <div class="modal auth-modal">
+    <button class="modal-x" onclick="closeModal('register-modal')">✕</button>
+    <div class="auth-modal-body">
+      <div class="modal-title">إنشاء حساب</div>
+      <button class="google-btn" onclick="signInGoogle()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        التسجيل بـ Google
+      </button>
+      <div class="divider">أو</div>
+      <input id="reg-name"  class="inp" type="text"     placeholder="الاسم الكامل"/>
+      <input id="reg-email" class="inp" type="email"    placeholder="البريد الإلكتروني"/>
+      <input id="reg-pass"  class="inp" type="password" placeholder="كلمة المرور"/>
+      <button class="btn-submit-full" onclick="registerUser()">إنشاء الحساب</button>
+      <p class="auth-switch">لديك حساب؟ <a onclick="openLoginModal()">تسجيل الدخول</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- VIP -->
+<div class="overlay" id="vip-modal">
+  <div class="modal vip-modal">
+    <button class="modal-x" onclick="closeModal('vip-modal')">✕</button>
+    <div class="vip-modal-head">
+      <div class="vip-badge">👑 VIP</div>
+      <h2 style="font-family:var(--display);font-size:1.8rem;margin-bottom:6px">GoalZone VIP</h2>
+      <p style="color:var(--muted);font-size:.85rem">بث HD بدون إعلانات · إشعارات فورية · تحليلات حصرية</p>
+    </div>
+    <div class="vip-plans">
+      <div class="plan">
+        <h3>شهري</h3>
+        <div class="plan-price">$9.99<small>/شهر</small></div>
+        <button class="btn-plan">اشترك الآن</button>
+      </div>
+      <div class="plan best">
+        <div class="plan-best-tag">الأفضل قيمة</div>
+        <h3>سنوي</h3>
+        <div class="plan-price">$79.99<small>/سنة</small></div>
+        <div class="plan-save">وفر 33%</div>
+        <button class="btn-plan">اشترك الآن</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notif bar -->
+<div class="notif-bar" id="notif-bar">
+  <span>🔔 فعّل الإشعارات لتلقي تنبيهات الأهداف والمباريات!</span>
+  <button class="btn-notif" onclick="reqNotif()">تفعيل</button>
+  <button class="btn-dismiss" onclick="dismissNotif()">✕</button>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Scripts -->
+<script src="js/i18n.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/matches.js"></script>
+<script src="js/main.js"></script>
+<script>
+// Hero mini feed
+document.addEventListener('DOMContentLoaded', async () => {
+  const hf = document.getElementById('hero-feed');
+  if (!hf) return;
+  const data = await API.live();
+  if (!data.length) {
+    hf.innerHTML = `<div class="empty" style="padding:30px"><p>لا توجد مباريات جارية الآن</p></div>`;
+    return;
+  }
+  hf.innerHTML = data.slice(0,6).map(f => {
+    const hL = f.teams.home.logo || '';
+    const aL = f.teams.away.logo || '';
+    return `
+      <div class="mc live-match" style="cursor:pointer" onclick="goWatch(${f.fixture.id})">
+        <div class="mc-team">
+          ${hL?`<img class="mc-logo" src="${hL}" onerror="this.style.display='none'"/>`:''}
+          <span class="mc-name">${f.teams.home.name}</span>
+        </div>
+        <div class="mc-center">
+          <span class="mc-live-badge">● LIVE</span>
+          <span class="mc-score">${f.goals.home??0} - ${f.goals.away??0}</span>
+          <span class="mc-time t-live">${f.fixture.status.elapsed??''}'</span>
+        </div>
+        <div class="mc-team away">
+          <span class="mc-name">${f.teams.away.name}</span>
+          ${aL?`<img class="mc-logo" src="${aL}" onerror="this.style.display='none'"/>`:''}
+        </div>
+      </div>`;
+  }).join('');
+});
+</script>
+</body>
+</html>
