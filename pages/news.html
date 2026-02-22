@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>GoalZone | الأخبار والتحليلات</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../css/main.css"/>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="logo"><div class="logo-ball">⚽</div><a href="../index.html" style="color:inherit">GOALZONE</a></div>
+    <nav class="nav" id="main-nav">
+      <a class="nav-a" href="../index.html">الرئيسية</a>
+      <a class="nav-a nav-live" href="live.html"><span class="live-dot"></span> مباشر</a>
+      <a class="nav-a on" href="news.html">الأخبار</a>
+      <a class="nav-a" href="watch.html">🔴 بث مباشر</a>
+    </nav>
+    <div class="header-actions" style="display:flex;align-items:center;gap:10px;margin-right:auto">
+      <button class="theme-btn" onclick="toggleTheme()">☀️</button>
+      <button class="burger" onclick="toggleNav()">☰</button>
+    </div>
+  </div>
+</header>
+
+<div class="ticker">
+  <div class="ticker-label">📰 أخبار</div>
+  <div style="overflow:hidden;flex:1"><div class="ticker-track"><span class="ticker-item">⚽ آخر أخبار كرة القدم العالمية والعربية على GoalZone</span><span class="ticker-item">🏆 تابع كل جديد من الدوريات الكبرى والبطولات الدولية</span><span class="ticker-item">⚽ آخر أخبار كرة القدم العالمية والعربية على GoalZone</span><span class="ticker-item">🏆 تابع كل جديد من الدوريات الكبرى والبطولات الدولية</span></div></div>
+</div>
+
+<main class="page">
+  <div class="container">
+    <div class="news-page-head">
+      <h1>📰 الأخبار والتحليلات</h1>
+      <p style="color:var(--muted);font-size:.9rem;margin-top:6px">آخر أخبار كرة القدم، تقارير المباريات، والتحليلات المعمقة</p>
+    </div>
+
+    <div class="news-cats" style="margin-top:20px">
+      <button class="nc on" onclick="filterNews('all',this)">الكل</button>
+      <button class="nc" onclick="filterNews('transfer',this)">🔄 الانتقالات</button>
+      <button class="nc" onclick="filterNews('match',this)">📋 تقارير المباريات</button>
+      <button class="nc" onclick="filterNews('analysis',this)">🧠 تحليلات</button>
+      <button class="nc" onclick="filterNews('injury',this)">🏥 الإصابات</button>
+      <button class="nc" onclick="filterNews('ucl',this)">🏆 أبطال أوروبا</button>
+      <button class="nc" onclick="filterNews('saudi',this)">🇸🇦 السعودية</button>
+    </div>
+
+    <div class="news-grid" id="news-grid"></div>
+
+    <div style="text-align:center;margin-top:8px">
+      <button class="btn-ghost" onclick="alert('تحميل المزيد يتطلب ربط مصدر أخبار أو Firebase')">
+        تحميل المزيد
+      </button>
+    </div>
+  </div>
+</main>
+
+<footer class="footer" style="margin-top:40px">
+  <div class="footer-bottom">Developed by <strong>Mohammed Gharouadi</strong> ©2026</div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script src="../js/i18n.js"></script>
+<script>
+function toggleTheme(){document.body.classList.toggle('light');const b=document.querySelector('.theme-btn');if(b)b.textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+function toggleNav(){document.getElementById('main-nav')?.classList.toggle('open')}
+
+const NEWS = [
+  {tag:'analysis', cat:'تحليل', emoji:'🧠', title:'لماذا يهيمن ريال مدريد على أوروبا؟ تحليل تكتيكي معمق', excerpt:'يعود ريال مدريد للتربع على قمة كرة القدم الأوروبية بفضل مزيج من الخبرة والموهبة الشابة وإدارة استثنائية للمباريات الحاسمة...', time:'منذ ساعة', views:'8,420'},
+  {tag:'transfer', cat:'انتقالات', emoji:'💰', title:'رسمي: نجم الدوري الإنجليزي يوقع مع الدوري السعودي بصفقة قياسية', excerpt:'أعلنت إحدى أندية الدوري السعودي للمحترفين اليوم عن إتمام صفقة تاريخية تعد الأضخم في تاريخ الدوري...', time:'منذ 2 ساعة', views:'12,300'},
+  {tag:'match', cat:'تقرير', emoji:'⚽', title:'الكلاسيكو: ريال مدريد 3-2 برشلونة — الأهداف والملخص الكامل', excerpt:'انتهت مباراة الكلاسيكو المثيرة بفوز ريال مدريد بثلاثة أهداف نظيفة مقابل هدفين لبرشلونة...', time:'منذ 3 ساعات', views:'31,500'},
+  {tag:'injury', cat:'إصابة', emoji:'🏥', title:'هالاند يغيب 6 أسابيع بسبب إصابة في الكاحل', excerpt:'أعلن نادي مانشستر سيتي رسميًا غياب مهاجمه النرويجي إيرلينغ هالاند لمدة ستة أسابيع...', time:'منذ 4 ساعات', views:'9,800'},
+  {tag:'ucl', cat:'أبطال أوروبا', emoji:'🏆', title:'قرعة دور الـ16 من دوري أبطال أوروبا تكشف مواجهات نارية', excerpt:'كشفت قرعة دور الستة عشر من دوري أبطال أوروبا عن مواجهات مثيرة، أبرزها لقاء ريال مدريد وبايرن ميونخ...', time:'منذ 5 ساعات', views:'22,100'},
+  {tag:'analysis', cat:'تحليل', emoji:'📊', title:'كيف غيّر تريبل تكتيك غوارديولا مسار الموسم؟', excerpt:'يتبنى غوارديولا هذا الموسم نهجًا تكتيكيًا مختلفًا جذريًا قائمًا على ضغط مرتفع وبناء من الخلف...', time:'منذ 6 ساعات', views:'7,200'},
+  {tag:'transfer', cat:'انتقالات', emoji:'🔄', title:'مدريد تستعد لضم نجم البرسا في الصيف بـ 90 مليون يورو', excerpt:'كشفت مصادر موثوقة أن ريال مدريد يتفاوض بجدية مع إدارة برشلونة للتوصل لاتفاق مبدئي...', time:'منذ 7 ساعات', views:'15,600'},
+  {tag:'saudi', cat:'الدوري السعودي', emoji:'🇸🇦', title:'الهلال يتصدر الدوري السعودي بعد فوز صعب على الاتحاد', excerpt:'حسم نادي الهلال قمة الجولة الثامنة والعشرين من الدوري السعودي للمحترفين بفوزه على منافسه الاتحاد...', time:'منذ 8 ساعات', views:'18,400'},
+  {tag:'match', cat:'تقرير', emoji:'🔴', title:'ليفربول يواصل انتصاراته بهدف ذهبي في الوقت القاتل', excerpt:'واصل ليفربول سلسلة انتصاراته المتتالية في الدوري الإنجليزي الممتاز بفوزه الصعب على نيوكاسل...', time:'أمس', views:'14,200'},
+];
+
+function filterNews(tag, btn) {
+  document.querySelectorAll('.nc').forEach(b=>b.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+  const filtered = tag==='all' ? NEWS : NEWS.filter(n=>n.tag===tag);
+  renderNews(filtered.length ? filtered : NEWS);
+}
+
+function renderNews(items) {
+  document.getElementById('news-grid').innerHTML = items.map((n,i) => `
+    <div class="news-card" ${i===0?'style="cursor:pointer"':'style="cursor:pointer"'}>
+      <div class="nc-img">${n.emoji}</div>
+      <div class="nc-body">
+        <div class="nc-cat">${n.cat}</div>
+        <h3 class="nc-title">${n.title}</h3>
+        <p class="nc-excerpt">${n.excerpt}</p>
+        <div class="nc-meta">
+          <span>⏰ ${n.time}</span>
+          <span>👁 ${n.views}</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const theme = localStorage.getItem('gz_theme')||'dark';
+  if (theme==='light') document.body.classList.add('light');
+  renderNews(NEWS);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>GoalZone | المباريات المباشرة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../css/main.css"/>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="logo"><div class="logo-ball">⚽</div><a href="../index.html" style="color:inherit">GOALZONE</a></div>
+    <nav class="nav" id="main-nav">
+      <a class="nav-a" href="../index.html">الرئيسية</a>
+      <a class="nav-a nav-live on" href="live.html"><span class="live-dot"></span> مباشر</a>
+      <a class="nav-a" href="news.html">الأخبار</a>
+      <a class="nav-a" href="watch.html">🔴 بث مباشر</a>
+    </nav>
+    <div class="header-actions" style="display:flex;align-items:center;gap:10px;margin-right:auto">
+      <div class="lang">
+        <button class="lang-btn on" data-lang-btn="ar" onclick="setLang('ar')">ع</button>
+        <button class="lang-btn"    data-lang-btn="fr" onclick="setLang('fr')">FR</button>
+        <button class="lang-btn"    data-lang-btn="en" onclick="setLang('en')">EN</button>
+      </div>
+      <button class="theme-btn" onclick="toggleTheme()">☀️</button>
+      <div id="auth-area"><button class="btn-signin" onclick="openLoginModal()">تسجيل دخول</button></div>
+      <button class="burger" onclick="toggleNav()">☰</button>
+    </div>
+  </div>
+</header>
+
+<div class="ticker">
+  <div class="ticker-label">🔴 LIVE</div>
+  <div style="overflow:hidden;flex:1"><div class="ticker-track" id="ticker-track"><span class="ticker-item">جارٍ التحميل...</span></div></div>
+</div>
+
+<!-- Live Header -->
+<div class="live-header">
+  <div class="container">
+    <div class="live-title"><div class="live-pulse"></div> المباريات الجارية الآن</div>
+    <p class="live-sub">يتحدث تلقائيًا كل 30 ثانية · <span id="last-upd">—</span></p>
+  </div>
+</div>
+
+<div class="live-counters">
+  <div class="lc"><div class="lc-n" id="live-total">—</div><div class="lc-l">مباراة جارية</div></div>
+  <div class="lc"><div class="lc-n" id="goals-today">—</div><div class="lc-l">هدف اليوم</div></div>
+  <div class="lc"><div class="lc-n" id="leagues-today">—</div><div class="lc-l">بطولة</div></div>
+</div>
+
+<main class="page" style="padding-top:20px">
+  <div class="container">
+    <div class="filters" style="margin-bottom:18px">
+      <button class="fbtn on" data-f="all"    onclick="setFilter('all')">الكل</button>
+      <button class="fbtn" data-f="ucl"        onclick="setFilter('ucl')">🏆 أبطال أوروبا</button>
+      <button class="fbtn" data-f="epl"        onclick="setFilter('epl')">🏴󠁧󠁢󠁥󠁮󠁧󠁿 الإنجليزية</button>
+      <button class="fbtn" data-f="laliga"     onclick="setFilter('laliga')">🇪🇸 الإسبانية</button>
+      <button class="fbtn" data-f="bundesliga" onclick="setFilter('bundesliga')">🇩🇪 الألمانية</button>
+      <button class="fbtn" data-f="serie_a"    onclick="setFilter('serie_a')">🇮🇹 الإيطالية</button>
+      <button class="fbtn" data-f="saudi"      onclick="setFilter('saudi')">🇸🇦 السعودية</button>
+    </div>
+    <div id="matches-feed"></div>
+  </div>
+</main>
+
+<footer class="footer" style="margin-top:40px">
+  <div class="footer-bottom">Developed by <strong>Mohammed Gharouadi</strong> ©2026</div>
+</footer>
+
+<!-- Match Modal -->
+<div class="overlay" id="match-modal">
+  <div class="modal" style="max-width:640px">
+    <button class="modal-x" onclick="closeMatch()">✕</button>
+    <div class="modal-head"></div>
+    <div class="modal-body" id="match-body"></div>
+  </div>
+</div>
+
+<!-- Login Modal -->
+<div class="overlay" id="login-modal">
+  <div class="modal auth-modal">
+    <button class="modal-x" onclick="closeModal('login-modal')">✕</button>
+    <div class="auth-modal-body">
+      <div class="modal-title">تسجيل الدخول</div>
+      <button class="google-btn" onclick="signInGoogle()">الدخول بـ Google</button>
+      <div class="divider">أو</div>
+      <input id="li-email" class="inp" type="email" placeholder="البريد الإلكتروني"/>
+      <input id="li-pass"  class="inp" type="password" placeholder="كلمة المرور"/>
+      <button class="btn-submit-full" onclick="signInEmail()">دخول</button>
+    </div>
+  </div>
+</div>
+
+<div class="vip-modal" style="display:none" id="vip-modal"></div>
+<div class="toast" id="toast"></div>
+
+<script src="../js/i18n.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/matches.js"></script>
+<script src="../js/main.js"></script>
+<script>
+// Override fetchAndRender to only fetch LIVE matches
+async function fetchAndRender() {
+  const feed = document.getElementById('matches-feed');
+  if (!feed) return;
+  feed.innerHTML = `<div class="spinner-wrap"><div class="spin"></div><p style="color:var(--muted);font-size:.85rem">جارٍ تحميل المباريات الجارية...</p></div>`;
+
+  allFixtures = await API.live();
+
+  const upd = document.getElementById('last-upd');
+  if (upd) upd.textContent = 'آخر تحديث: ' + new Date().toLocaleTimeString('ar-EG');
+
+  if (!allFixtures.length) {
+    feed.innerHTML = `<div class="empty"><div class="empty-icon">📡</div><p>لا توجد مباريات جارية الآن</p></div>`;
+    syncCounters(); return;
+  }
+  renderFeed();
+  syncCounters();
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  fetchAndRender();
+  buildTicker();
+  // Auto-refresh every 30s
+  setInterval(() => fetchAndRender(), 30000);
+});
+</script>
+</body>
+</html>

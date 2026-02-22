@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>GoalZone | البث المباشر</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../css/main.css"/>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="logo"><div class="logo-ball">⚽</div><a href="../index.html" style="color:inherit">GOALZONE</a></div>
+    <nav class="nav" id="main-nav">
+      <a class="nav-a" href="../index.html">الرئيسية</a>
+      <a class="nav-a nav-live" href="live.html"><span class="live-dot"></span> مباشر</a>
+      <a class="nav-a" href="news.html">الأخبار</a>
+      <a class="nav-a on" href="watch.html">🔴 بث مباشر</a>
+    </nav>
+    <div class="header-actions" style="display:flex;align-items:center;gap:10px;margin-right:auto">
+      <button class="theme-btn" onclick="toggleTheme()">☀️</button>
+      <button class="burger" onclick="toggleNav()">☰</button>
+    </div>
+  </div>
+</header>
+
+<div class="ticker">
+  <div class="ticker-label">🔴 LIVE</div>
+  <div style="overflow:hidden;flex:1"><div class="ticker-track"><span class="ticker-item">GoalZone — البث المباشر لأهم مباريات كرة القدم</span><span class="ticker-item">GoalZone — البث المباشر لأهم مباريات كرة القدم</span></div></div>
+</div>
+
+<main class="page" style="padding-top:0">
+  <div class="container">
+    <div class="watch-layout">
+
+      <!-- Player -->
+      <div>
+        <div class="player-box" id="player-box">
+          <div class="player-placeholder" id="player-ph">
+            <div style="font-size:4rem">📺</div>
+            <h3>اختر مباراة للمشاهدة</h3>
+            <p style="color:var(--muted);font-size:.85rem;margin-top:6px">اختر من قائمة المباريات الجارية على اليمين</p>
+          </div>
+          <iframe id="player-frame" src="" style="display:none;width:100%;height:100%;border:none" allowfullscreen></iframe>
+        </div>
+
+        <div class="player-controls">
+          <span style="color:var(--muted);font-size:.82rem">الجودة:</span>
+          <button class="qbtn on" onclick="setQ(this,'auto')">Auto</button>
+          <button class="qbtn"    onclick="setQ(this,'720p')">HD 720p</button>
+          <button class="qbtn"    onclick="setQ(this,'1080p')">FHD 1080p</button>
+          <button class="qbtn"    onclick="setQ(this,'4k')" style="color:var(--yellow)">👑 4K</button>
+          <button class="qbtn" style="background:var(--red);color:#fff;border-color:var(--red);margin-right:auto"
+                  onclick="goFull()">⛶ ملء الشاشة</button>
+        </div>
+
+        <!-- Notice -->
+        <div class="widget" style="margin-top:14px">
+          <div class="w-head">⚠️ تنبيه</div>
+          <div class="w-body" style="font-size:.84rem;color:var(--muted);line-height:1.7">
+            GoalZone يعرض روابط مشروعة فقط. للمشاهدة الرسمية يرجى الاشتراك في القنوات المرخصة.
+            <br/>اشترك في <strong style="color:var(--yellow)">VIP</strong> للحصول على بث 4K بدون إعلانات.
+          </div>
+        </div>
+
+        <!-- Stream links -->
+        <div class="stream-list" id="stream-list" style="display:none">
+          <h4 style="margin-bottom:8px;font-size:.88rem">🔗 روابط البث المتاحة</h4>
+          <div class="stream-item" onclick="playStream('beIN')">
+            <span style="font-size:1.4rem">📡</span>
+            <div><div class="stream-name">beIN Sports</div><div class="stream-lang">عربي · <span class="stream-qual">HD 720p</span></div></div>
+            <span class="stream-live-tag">LIVE</span>
+          </div>
+          <div class="stream-item" onclick="playStream('SSC')">
+            <span style="font-size:1.4rem">📺</span>
+            <div><div class="stream-name">SSC Sport</div><div class="stream-lang">عربي · <span class="stream-qual">FHD 1080p</span></div></div>
+            <span class="stream-live-tag">LIVE</span>
+          </div>
+          <div class="stream-item" onclick="playStream('Sky')">
+            <span style="font-size:1.4rem">🌍</span>
+            <div><div class="stream-name">Sky Sports</div><div class="stream-lang">English · <span class="stream-qual">HD</span></div></div>
+          </div>
+          <div class="stream-item" style="border-color:rgba(255,214,10,.4)" onclick="openVIPModal()">
+            <span style="font-size:1.4rem">👑</span>
+            <div><div class="stream-name" style="color:var(--yellow)">VIP Stream</div><div class="stream-lang">بدون إعلانات · <span class="stream-qual">4K Ultra HD</span></div></div>
+            <span class="stream-live-tag" style="background:var(--yellow);color:#000">VIP</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar: live matches -->
+      <aside>
+        <div class="widget">
+          <div class="w-head">🔴 مباريات جارية</div>
+          <div class="w-body" id="live-list">
+            <div class="spinner-wrap" style="padding:20px"><div class="spin"></div></div>
+          </div>
+        </div>
+
+        <div class="widget vip-widget" style="margin-top:0">
+          <div class="vip-crown">👑</div>
+          <h3>بث VIP</h3>
+          <p>4K بدون إعلانات، إشعارات فورية</p>
+          <button class="btn-vip" onclick="openVIPModal()">اشترك — $9.99/شهر</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<!-- VIP Modal -->
+<div class="overlay" id="vip-modal">
+  <div class="modal vip-modal">
+    <button class="modal-x" onclick="closeModal('vip-modal')">✕</button>
+    <div class="vip-modal-head">
+      <div class="vip-badge">👑 VIP</div>
+      <h2 style="font-family:var(--display);font-size:1.8rem;margin-bottom:6px">GoalZone VIP</h2>
+      <p style="color:var(--muted);font-size:.85rem">بث بدون إعلانات · جودة 4K · إشعارات فورية</p>
+    </div>
+    <div class="vip-plans">
+      <div class="plan"><h3>شهري</h3><div class="plan-price">$9.99<small>/شهر</small></div><button class="btn-plan">اشترك</button></div>
+      <div class="plan best"><div class="plan-best-tag">الأفضل</div><h3>سنوي</h3><div class="plan-price">$79.99<small>/سنة</small></div><div class="plan-save">وفر 33%</div><button class="btn-plan">اشترك</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="../js/i18n.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script>
+function toggleTheme(){document.body.classList.toggle('light');const b=document.querySelector('.theme-btn');if(b)b.textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+function toggleNav(){document.getElementById('main-nav')?.classList.toggle('open')}
+function openVIPModal(){document.getElementById('vip-modal')?.classList.add('show')}
+function closeModal(id){document.getElementById(id)?.classList.remove('show')}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show')}));
+
+let curFixId = null;
+
+function setQ(btn,q){document.querySelectorAll('.qbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');toast('الجودة: '+q,'ok')}
+function goFull(){document.getElementById('player-box')?.requestFullscreen?.()}
+
+function playStream(src){
+  const ph=document.getElementById('player-ph');
+  if(ph) ph.innerHTML=`<div style="font-size:3rem">📡</div><h3 style="color:var(--green)">جارٍ الاتصال...</h3><p style="color:var(--muted);font-size:.82rem;margin-top:6px">المصدر: ${src}</p><p style="color:var(--muted);font-size:.75rem;margin-top:10px">يتطلب بث رسمي اشتراكًا في القناة</p>`;
+}
+
+function selectMatch(id,name){
+  curFixId = id;
+  const ph=document.getElementById('player-ph');
+  if(ph) ph.innerHTML=`<div style="font-size:2.5rem">⚽</div><h3 style="color:var(--green);margin:10px 0">${name}</h3><p style="color:var(--muted);font-size:.82rem">اختر رابط البث أدناه</p>`;
+  document.getElementById('stream-list').style.display='';
+  toast('تم تحديد المباراة', 'ok');
+}
+
+async function loadLiveList(){
+  const el = document.getElementById('live-list');
+  const data = await API.live();
+  if(!data.length){el.innerHTML=`<div class="empty" style="padding:20px"><p>لا توجد مباريات جارية</p></div>`;return;}
+  el.innerHTML = data.map(f=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 8px;border-radius:8px;cursor:pointer;transition:background .15s;border-bottom:1px solid var(--border)"
+         onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''"
+         onclick="selectMatch(${f.fixture.id},'${f.teams.home.name} vs ${f.teams.away.name}')">
+      <span style="background:var(--red);color:#fff;font-size:.62rem;font-weight:900;padding:2px 6px;border-radius:3px;flex-shrink:0">LIVE</span>
+      <div style="flex:1;font-size:.82rem">
+        <strong>${f.teams.home.name} vs ${f.teams.away.name}</strong>
+        <div style="color:var(--muted);font-size:.74rem">${f.league.name}</div>
+      </div>
+      <span style="font-family:var(--display);font-size:1rem">${f.goals.home??0}-${f.goals.away??0}</span>
+    </div>`).join('');
+}
+
+function toast(msg,type=''){const el=document.getElementById('toast');if(!el)return;el.textContent=msg;el.className=`toast show${type?' '+type:''}`;setTimeout(()=>el.classList.remove('show'),3000);}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const theme=localStorage.getItem('gz_theme')||'dark';
+  if(theme==='light') document.body.classList.add('light');
+  loadLiveList();
+});
+</script>
+</body>
+</html>
